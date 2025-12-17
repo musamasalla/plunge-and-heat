@@ -247,7 +247,7 @@ extension Achievement {
     static let iceBear = Achievement(
         name: "Ice Bear",
         description: "Complete 50 cold plunge sessions",
-        iconName: "bear.fill",
+        iconName: "figure.pool.swim",
         category: .coldPlunge,
         requirement: 50
     )
