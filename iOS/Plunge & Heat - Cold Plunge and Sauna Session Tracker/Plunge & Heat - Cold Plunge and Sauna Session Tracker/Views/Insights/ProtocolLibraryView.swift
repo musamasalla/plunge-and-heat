@@ -11,37 +11,48 @@ import SwiftUI
 
 struct ProtocolLibraryView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedCategory: ProtocolCategory?
+    @State private var selectedCategory: ProtocolCategory? = nil
     @State private var selectedProtocol: WellnessProtocol?
+    @State private var animateCards = false
     
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.background.ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         // Category filter
                         categoryFilter
                         
-                        // Protocols list
-                        protocolsList
+                        // Featured protocol
+                        if selectedCategory == nil {
+                            featuredSection
+                        }
+                        
+                        // Protocol grid
+                        protocolGrid
                     }
-                    .padding()
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    .padding(.bottom, 100)
                 }
             }
-            .navigationTitle("Protocol Library")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Protocols")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .foregroundColor(AppTheme.coldPrimary)
+                    Button("Done") { dismiss() }
+                        .foregroundColor(AppTheme.coldPrimary)
                 }
             }
-            .sheet(item: $selectedProtocol) { protocol_ in
-                ProtocolDetailView(protocol_: protocol_)
+            .sheet(item: $selectedProtocol) { proto in
+                ProtocolDetailView(protocol: proto)
+            }
+            .onAppear {
+                withAnimation(.spring().delay(0.2)) {
+                    animateCards = true
+                }
             }
         }
     }
@@ -51,34 +62,65 @@ struct ProtocolLibraryView: View {
     private var categoryFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                FilterChip(
+                CategoryChip(
                     title: "All",
                     isSelected: selectedCategory == nil,
-                    color: AppTheme.coldPrimary
+                    color: .purple
                 ) {
-                    selectedCategory = nil
+                    HapticFeedback.light()
+                    withAnimation(.spring()) {
+                        selectedCategory = nil
+                    }
                 }
                 
                 ForEach(ProtocolCategory.allCases, id: \.self) { category in
-                    FilterChip(
+                    CategoryChip(
                         title: category.rawValue,
                         isSelected: selectedCategory == category,
                         color: category.color
                     ) {
-                        selectedCategory = category
+                        HapticFeedback.light()
+                        withAnimation(.spring()) {
+                            selectedCategory = category
+                        }
                     }
                 }
+            }
+            .padding(.horizontal, 4)
+        }
+    }
+    
+    // MARK: - Featured Section
+    
+    private var featuredSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundColor(.yellow)
+                Text("Featured")
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
+            
+            FeaturedProtocolCard(protocol: .wimHofMethod) {
+                selectedProtocol = .wimHofMethod
             }
         }
     }
     
-    // MARK: - Protocols List
+    // MARK: - Protocol Grid
     
-    private var protocolsList: some View {
-        VStack(spacing: 16) {
-            ForEach(filteredProtocols) { protocol_ in
-                ProtocolListCard(protocol_: protocol_) {
-                    selectedProtocol = protocol_
+    private var protocolGrid: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("All Protocols")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
+                ForEach(Array(filteredProtocols.enumerated()), id: \.element.id) { index, proto in
+                    ProtocolCard(protocol: proto, animate: animateCards, delay: Double(index) * 0.05) {
+                        selectedProtocol = proto
+                    }
                 }
             }
         }
@@ -92,10 +134,34 @@ struct ProtocolLibraryView: View {
     }
 }
 
-// MARK: - Protocol List Card
+// MARK: - Category Chip
 
-struct ProtocolListCard: View {
-    let protocol_: WellnessProtocol
+struct CategoryChip: View {
+    let title: String
+    let isSelected: Bool
+    let color: Color
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundColor(isSelected ? .white : AppTheme.textSecondary)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(isSelected ? color : AppTheme.cardBackground)
+                )
+        }
+    }
+}
+
+// MARK: - Featured Protocol Card
+
+struct FeaturedProtocolCard: View {
+    let `protocol`: WellnessProtocol
     let action: () -> Void
     
     var body: some View {
@@ -105,64 +171,119 @@ struct ProtocolListCard: View {
                     // Icon
                     ZStack {
                         Circle()
-                            .fill(protocol_.sessionType.primaryColor.opacity(0.2))
-                            .frame(width: 50, height: 50)
+                            .fill(`protocol`.category.color.opacity(0.2))
+                            .frame(width: 60, height: 60)
                         
-                        Image(systemName: protocol_.iconName)
+                        Image(systemName: `protocol`.iconName)
                             .font(.title2)
-                            .foregroundColor(protocol_.sessionType.primaryColor)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(protocol_.name)
-                                .font(.headline)
-                                .foregroundColor(.white)
-                            
-                            if protocol_.isPremium {
-                                PremiumBadge()
-                            }
-                        }
-                        
-                        HStack(spacing: 8) {
-                            Text(protocol_.category.rawValue)
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(protocol_.category.color.opacity(0.2))
-                                .foregroundColor(protocol_.category.color)
-                                .cornerRadius(4)
-                            
-                            Text(protocol_.sessionType.displayName)
-                                .font(.caption)
-                                .foregroundColor(AppTheme.textSecondary)
-                        }
+                            .foregroundColor(`protocol`.category.color)
                     }
                     
                     Spacer()
                     
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(AppTheme.textTertiary)
+                    // Category badge
+                    Text(`protocol`.category.rawValue)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(`protocol`.category.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(`protocol`.category.color.opacity(0.2))
+                        )
                 }
                 
-                Text(protocol_.description)
-                    .font(.subheadline)
-                    .foregroundColor(AppTheme.textSecondary)
-                    .lineLimit(2)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(`protocol`.name)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                    
+                    Text(`protocol`.description)
+                        .font(.subheadline)
+                        .foregroundColor(AppTheme.textSecondary)
+                        .lineLimit(2)
+                }
                 
-                // Details
                 HStack(spacing: 16) {
-                    Label(protocol_.targetDuration.formatted, systemImage: "clock")
-                    Label(protocol_.targetTemperature.formatted, systemImage: "thermometer.medium")
-                    Label("\(protocol_.frequencyPerWeek)x/week", systemImage: "calendar")
+                    Label("\(`protocol`.targetDuration.formatted)", systemImage: "clock")
+                    Label("\(`protocol`.steps.count) steps", systemImage: "list.number")
                 }
                 .font(.caption)
                 .foregroundColor(AppTheme.textTertiary)
             }
-            .padding()
-            .background(AppTheme.cardBackground)
-            .cornerRadius(AppTheme.cornerRadiusLarge)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(AppTheme.cardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 24)
+                            .stroke(
+                                LinearGradient(
+                                    colors: [`protocol`.category.color.opacity(0.5), `protocol`.category.color.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+            )
         }
+    }
+}
+
+// MARK: - Protocol Card
+
+struct ProtocolCard: View {
+    let `protocol`: WellnessProtocol
+    let animate: Bool
+    var delay: Double = 0
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(alignment: .leading, spacing: 12) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(`protocol`.category.color.opacity(0.2))
+                        .frame(width: 50, height: 50)
+                    
+                    Image(systemName: `protocol`.iconName)
+                        .font(.title3)
+                        .foregroundColor(`protocol`.category.color)
+                }
+                
+                Text(`protocol`.name)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                
+                HStack {
+                    Text(`protocol`.category.rawValue)
+                        .font(.caption2)
+                        .foregroundColor(`protocol`.category.color)
+                    
+                    Spacer()
+                    
+                    Image(systemName: `protocol`.sessionType.icon)
+                        .font(.caption)
+                        .foregroundColor(`protocol`.sessionType.primaryColor)
+                }
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(AppTheme.cardBackground)
+            )
+        }
+        .scaleEffect(animate ? 1 : 0.9)
+        .opacity(animate ? 1 : 0)
+        .animation(.spring().delay(delay), value: animate)
     }
 }
 
@@ -170,118 +291,89 @@ struct ProtocolListCard: View {
 
 struct ProtocolDetailView: View {
     @Environment(\.dismiss) private var dismiss
-    let protocol_: WellnessProtocol
+    let `protocol`: WellnessProtocol
     
-    @State private var showingStartSession = false
+    @State private var showSteps = false
     
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.background.ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(spacing: 24) {
                         // Header
                         headerSection
                         
-                        // Overview
-                        overviewSection
+                        // Benefits
+                        benefitsSection
                         
                         // Steps
                         stepsSection
                         
-                        // Benefits
-                        benefitsSection
-                        
                         // Tips
-                        tipsSection
+                        if !`protocol`.tips.isEmpty {
+                            tipsSection
+                        }
                         
                         // Start button
                         startButton
                     }
-                    .padding()
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 40)
                 }
             }
-            .navigationTitle(protocol_.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(AppTheme.textTertiary)
                     }
-                    .foregroundColor(AppTheme.coldPrimary)
                 }
             }
-            .sheet(isPresented: $showingStartSession) {
-                LogSessionView(sessionType: protocol_.sessionType)
+            .onAppear {
+                withAnimation(.spring().delay(0.3)) {
+                    showSteps = true
+                }
             }
         }
     }
-    
-    // MARK: - Header
     
     private var headerSection: some View {
         VStack(spacing: 16) {
             ZStack {
                 Circle()
-                    .fill(protocol_.sessionType.gradient)
-                    .frame(width: 80, height: 80)
+                    .fill(`protocol`.category.color.opacity(0.2))
+                    .frame(width: 100, height: 100)
                 
-                Image(systemName: protocol_.iconName)
-                    .font(.system(size: 36))
+                Image(systemName: `protocol`.iconName)
+                    .font(.system(size: 44))
+                    .foregroundColor(`protocol`.category.color)
+            }
+            
+            VStack(spacing: 8) {
+                Text(`protocol`.name)
+                    .font(.title)
+                    .fontWeight(.bold)
                     .foregroundColor(.white)
-            }
-            
-            HStack(spacing: 8) {
-                Text(protocol_.category.rawValue)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(protocol_.category.color.opacity(0.2))
-                    .foregroundColor(protocol_.category.color)
-                    .cornerRadius(4)
+                    .multilineTextAlignment(.center)
                 
-                Text(protocol_.sessionType.displayName)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(protocol_.sessionType.primaryColor.opacity(0.2))
-                    .foregroundColor(protocol_.sessionType.primaryColor)
-                    .cornerRadius(4)
+                Text(`protocol`.description)
+                    .font(.subheadline)
+                    .foregroundColor(AppTheme.textSecondary)
+                    .multilineTextAlignment(.center)
             }
             
-            Text(protocol_.description)
-                .font(.body)
-                .foregroundColor(AppTheme.textSecondary)
-                .multilineTextAlignment(.center)
-        }
-    }
-    
-    // MARK: - Overview
-    
-    private var overviewSection: some View {
-        HStack(spacing: 16) {
-            OverviewCard(icon: "thermometer.medium", title: "Temperature", value: protocol_.targetTemperature.formatted)
-            OverviewCard(icon: "clock", title: "Duration", value: protocol_.targetDuration.formatted)
-            OverviewCard(icon: "calendar", title: "Frequency", value: "\(protocol_.frequencyPerWeek)x/week")
-        }
-    }
-    
-    // MARK: - Steps
-    
-    private var stepsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Steps")
-                .font(.headline)
-                .foregroundColor(.white)
-            
-            ForEach(protocol_.steps) { step in
-                StepRow(step: step, sessionType: protocol_.sessionType)
+            HStack(spacing: 24) {
+                DetailInfoBadge(icon: "clock.fill", value: `protocol`.targetDuration.formatted, color: .blue)
+                DetailInfoBadge(icon: "list.number", value: "\(`protocol`.steps.count) steps", color: .purple)
+                DetailInfoBadge(icon: "chart.bar.fill", value: `protocol`.category.rawValue, color: `protocol`.category.color)
             }
         }
+        .padding(.top, 20)
     }
-    
-    // MARK: - Benefits
     
     private var benefitsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -289,116 +381,130 @@ struct ProtocolDetailView: View {
                 .font(.headline)
                 .foregroundColor(.white)
             
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(protocol_.benefits, id: \.self) { benefit in
-                    HStack(spacing: 12) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        
-                        Text(benefit)
-                            .font(.subheadline)
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
+            ForEach(`protocol`.benefits, id: \.self) { benefit in
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    
+                    Text(benefit)
+                        .font(.subheadline)
+                        .foregroundColor(AppTheme.textSecondary)
                 }
             }
-            .padding()
-            .background(AppTheme.cardBackground)
-            .cornerRadius(AppTheme.cornerRadiusMedium)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(AppTheme.cardBackground)
+        )
     }
     
-    // MARK: - Tips
-    
-    private var tipsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Tips")
+    private var stepsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Steps")
                 .font(.headline)
                 .foregroundColor(.white)
             
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(protocol_.tips, id: \.self) { tip in
-                    HStack(spacing: 12) {
-                        Image(systemName: "lightbulb.fill")
-                            .foregroundColor(.yellow)
-                        
-                        Text(tip)
-                            .font(.subheadline)
-                            .foregroundColor(AppTheme.textSecondary)
-                    }
-                }
+            ForEach(Array(`protocol`.steps.enumerated()), id: \.offset) { index, step in
+                ProtocolStepRow(
+                    stepNumber: index + 1,
+                    step: step,
+                    color: `protocol`.category.color
+                )
+                .opacity(showSteps ? 1 : 0)
+                .offset(x: showSteps ? 0 : -50)
+                .animation(.spring().delay(Double(index) * 0.1), value: showSteps)
             }
-            .padding()
-            .background(AppTheme.cardBackground)
-            .cornerRadius(AppTheme.cornerRadiusMedium)
         }
     }
     
-    // MARK: - Start Button
+    private var tipsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "lightbulb.fill")
+                    .foregroundColor(.yellow)
+                Text("Tips")
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
+            
+            ForEach(`protocol`.tips, id: \.self) { tip in
+                Text("• \(tip)")
+                    .font(.subheadline)
+                    .foregroundColor(AppTheme.textSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.yellow.opacity(0.1))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.yellow.opacity(0.3), lineWidth: 1)
+                )
+        )
+    }
     
     private var startButton: some View {
         Button(action: {
             HapticFeedback.medium()
-            showingStartSession = true
+            dismiss()
         }) {
             HStack {
                 Image(systemName: "play.fill")
-                Text("Start This Protocol")
+                Text("Start Protocol")
             }
             .font(.headline)
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .padding()
-            .background(protocol_.sessionType.gradient)
-            .cornerRadius(AppTheme.cornerRadiusMedium)
+            .padding(.vertical, 18)
+            .background(`protocol`.category.color)
+            .cornerRadius(16)
+            .shadow(color: `protocol`.category.color.opacity(0.4), radius: 15, y: 8)
         }
     }
 }
 
-// MARK: - Overview Card
+// MARK: - Detail Info Badge
 
-struct OverviewCard: View {
+struct DetailInfoBadge: View {
     let icon: String
-    let title: String
     let value: String
+    let color: Color
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(AppTheme.coldPrimary)
-            
+                .foregroundColor(color)
             Text(value)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-            
-            Text(title)
                 .font(.caption)
-                .foregroundColor(AppTheme.textTertiary)
+                .fontWeight(.medium)
+                .foregroundColor(.white)
         }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(AppTheme.cardBackground)
-        .cornerRadius(AppTheme.cornerRadiusMedium)
     }
 }
 
-// MARK: - Step Row
+// MARK: - Protocol Step Row
 
-struct StepRow: View {
+struct ProtocolStepRow: View {
+    let stepNumber: Int
     let step: ProtocolStep
-    let sessionType: SessionType
+    let color: Color
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(alignment: .top, spacing: 16) {
+            // Step number
             ZStack {
                 Circle()
-                    .fill(sessionType.primaryColor.opacity(0.2))
-                    .frame(width: 36, height: 36)
+                    .fill(color)
+                    .frame(width: 32, height: 32)
                 
-                Text("\(step.order)")
-                    .font(.headline)
-                    .foregroundColor(sessionType.primaryColor)
+                Text("\(stepNumber)")
+                    .font(.subheadline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
             }
             
             VStack(alignment: .leading, spacing: 4) {
@@ -411,18 +517,22 @@ struct StepRow: View {
                     .font(.caption)
                     .foregroundColor(AppTheme.textSecondary)
                 
-                if let duration = step.durationSeconds {
-                    Text("\(Int(duration))s")
+                if let duration = step.durationSeconds, duration > 0 {
+                    let mins = Int(duration) / 60
+                    let secs = Int(duration) % 60
+                    Text(mins > 0 ? "\(mins) min \(secs) sec" : "\(secs) sec")
                         .font(.caption)
-                        .foregroundColor(sessionType.primaryColor)
+                        .foregroundColor(color)
                 }
             }
             
             Spacer()
         }
         .padding()
-        .background(AppTheme.cardBackground)
-        .cornerRadius(AppTheme.cornerRadiusMedium)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(AppTheme.cardBackground)
+        )
     }
 }
 
