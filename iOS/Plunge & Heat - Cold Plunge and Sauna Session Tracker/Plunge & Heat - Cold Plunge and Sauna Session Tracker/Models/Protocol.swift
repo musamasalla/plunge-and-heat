@@ -244,11 +244,98 @@ extension WellnessProtocol {
         isPremium: false
     )
     
+    static let finnishSauna = WellnessProtocol(
+        name: "Finnish Sauna Tradition",
+        description: "Classic Finnish sauna experience with proper cool-down periods for optimal relaxation.",
+        category: .therapeutic,
+        sessionType: .sauna,
+        targetTemperature: TemperatureRange(min: 176, max: 212, unit: .fahrenheit),
+        targetDuration: DurationRange(min: 900, max: 1500),
+        frequencyPerWeek: 3,
+        steps: [
+            ProtocolStep(order: 1, title: "Shower", description: "Rinse off before entering sauna", durationSeconds: 60),
+            ProtocolStep(order: 2, title: "First Round", description: "Sit on lower bench, gradually move up", durationSeconds: 600),
+            ProtocolStep(order: 3, title: "Cool Down", description: "Cold shower or rest in cool room", durationSeconds: 120),
+            ProtocolStep(order: 4, title: "Second Round", description: "Add löyly (steam) by pouring water on stones", durationSeconds: 480),
+            ProtocolStep(order: 5, title: "Rest", description: "Relax and hydrate", durationSeconds: 300)
+        ],
+        benefits: ["Deep relaxation", "Improved circulation", "Skin detoxification", "Stress relief"],
+        tips: ["Stay hydrated", "Don't rush", "Listen to your body", "End with cool shower"],
+        iconName: "flame.fill",
+        isPremium: false
+    )
+    
+    static let athleteRecovery = WellnessProtocol(
+        name: "Athlete Recovery Protocol",
+        description: "Optimized cold exposure routine for post-workout muscle recovery and reduced inflammation.",
+        category: .performance,
+        sessionType: .coldPlunge,
+        targetTemperature: TemperatureRange(min: 50, max: 59, unit: .fahrenheit),
+        targetDuration: DurationRange(min: 60, max: 180),
+        frequencyPerWeek: 4,
+        steps: [
+            ProtocolStep(order: 1, title: "Post-Workout Wait", description: "Wait 4+ hours after strength training", durationSeconds: 0),
+            ProtocolStep(order: 2, title: "Brief Warmup", description: "Light movement to increase blood flow", durationSeconds: 120),
+            ProtocolStep(order: 3, title: "Cold Immersion", description: "Submerge to mid-chest level", durationSeconds: 120),
+            ProtocolStep(order: 4, title: "Active Recovery", description: "Move limbs gently in cold water", durationSeconds: 60),
+            ProtocolStep(order: 5, title: "Natural Warmup", description: "Exit and let body warm naturally", durationSeconds: 0)
+        ],
+        benefits: ["Reduced muscle soreness", "Faster recovery", "Decreased inflammation", "Improved performance"],
+        tips: ["Don't plunge immediately after strength training", "Focus on breathing", "Use after endurance training is fine"],
+        iconName: "figure.run",
+        isPremium: true
+    )
+    
+    static let coldShowerStart = WellnessProtocol(
+        name: "30-Day Cold Shower Challenge",
+        description: "Progressive cold shower challenge to build cold tolerance before moving to ice baths.",
+        category: .beginner,
+        sessionType: .coldPlunge,
+        targetTemperature: TemperatureRange(min: 55, max: 70, unit: .fahrenheit),
+        targetDuration: DurationRange(min: 30, max: 180),
+        frequencyPerWeek: 7,
+        steps: [
+            ProtocolStep(order: 1, title: "Week 1", description: "End showers with 30 seconds of cold water", durationSeconds: 30),
+            ProtocolStep(order: 2, title: "Week 2", description: "Increase to 1 minute of cold water", durationSeconds: 60),
+            ProtocolStep(order: 3, title: "Week 3", description: "Start with cold, then alternate", durationSeconds: 90),
+            ProtocolStep(order: 4, title: "Week 4", description: "Full cold showers, 2-3 minutes", durationSeconds: 150)
+        ],
+        benefits: ["Build cold tolerance", "Morning alertness", "Improved willpower", "Better circulation"],
+        tips: ["Consistency is key", "Focus on breath control", "Celebrate small wins"],
+        iconName: "drop.fill",
+        isPremium: false
+    )
+    
+    static let advancedIceBath = WellnessProtocol(
+        name: "Advanced Ice Bath",
+        description: "Intensive cold exposure for experienced practitioners seeking maximum benefits.",
+        category: .advanced,
+        sessionType: .coldPlunge,
+        targetTemperature: TemperatureRange(min: 33, max: 45, unit: .fahrenheit),
+        targetDuration: DurationRange(min: 180, max: 600),
+        frequencyPerWeek: 2,
+        steps: [
+            ProtocolStep(order: 1, title: "Mental Preparation", description: "Breathing exercises and visualization", durationSeconds: 180),
+            ProtocolStep(order: 2, title: "Enter Gradually", description: "Submerge body, then arms one at a time", durationSeconds: 30),
+            ProtocolStep(order: 3, title: "Full Immersion", description: "Submerge to neck, stay calm", durationSeconds: 300),
+            ProtocolStep(order: 4, title: "Hands Under", description: "Submerge hands for additional challenge", durationSeconds: 120),
+            ProtocolStep(order: 5, title: "Exit & Recover", description: "Move slowly, allow body to shiver and warm", durationSeconds: 0)
+        ],
+        benefits: ["Maximum hormetic stress", "Peak dopamine response", "Enhanced mental fortitude", "Deep recovery"],
+        tips: ["Never practice alone", "Know your limits", "Don't push through numbness", "Have warm clothes ready"],
+        iconName: "snowflake.circle.fill",
+        isPremium: true
+    )
+    
     static let allProtocols: [WellnessProtocol] = [
         .wimHofMethod,
         .hubermanProtocol,
         .scandinavianContrast,
-        .beginnerCold
+        .beginnerCold,
+        .finnishSauna,
+        .athleteRecovery,
+        .coldShowerStart,
+        .advancedIceBath
     ]
 }
 
