@@ -160,6 +160,8 @@ enum AchievementCategory: String, Codable, CaseIterable {
     case sauna = "Sauna"
     case duration = "Duration"
     case consistency = "Consistency"
+    case total = "Total"
+    case special = "Special"
     
     var color: Color {
         switch self {
@@ -168,6 +170,8 @@ enum AchievementCategory: String, Codable, CaseIterable {
         case .sauna: return AppTheme.heatPrimary
         case .duration: return .purple
         case .consistency: return .green
+        case .total: return .yellow
+        case .special: return .pink
         }
     }
 }
@@ -276,12 +280,75 @@ extension Achievement {
         requirement: 30
     )
     
+    static let centurion = Achievement(
+        name: "Centurion",
+        description: "Complete 100 total sessions",
+        iconName: "100.circle.fill",
+        category: .total,
+        requirement: 100
+    )
+    
+    static let earlyBird = Achievement(
+        name: "Early Bird",
+        description: "Complete 10 sessions before 7 AM",
+        iconName: "sunrise.fill",
+        category: .special,
+        requirement: 10
+    )
+    
+    static let nightOwl = Achievement(
+        name: "Night Owl",
+        description: "Complete 10 sessions after 9 PM",
+        iconName: "moon.stars.fill",
+        category: .special,
+        requirement: 10
+    )
+    
+    static let coldWarrior = Achievement(
+        name: "Cold Warrior",
+        description: "Log 1 hour total cold exposure",
+        iconName: "timer",
+        category: .coldPlunge,
+        requirement: 60 // minutes
+    )
+    
+    static let saunaMaster = Achievement(
+        name: "Sauna Master",
+        description: "Log 5 hours total sauna time",
+        iconName: "thermometer.sun.fill",
+        category: .sauna,
+        requirement: 300 // minutes
+    )
+    
+    static let consistentChampion = Achievement(
+        name: "Consistent Champion",
+        description: "Complete 4 sessions per week for 4 weeks",
+        iconName: "calendar.badge.checkmark",
+        category: .streak,
+        requirement: 16
+    )
+    
+    static let extremeExplorer = Achievement(
+        name: "Extreme Explorer",
+        description: "Complete a session below 40°F / 5°C",
+        iconName: "wind.snow",
+        category: .coldPlunge,
+        requirement: 1
+    )
+    
     static let allAchievements: [Achievement] = [
         .firstPlunge,
         .iceBear,
         .heatSeeker,
         .weekWarrior,
-        .monthlyMaster
+        .monthlyMaster,
+        .centurion,
+        .earlyBird,
+        .nightOwl,
+        .coldWarrior,
+        .saunaMaster,
+        .consistentChampion,
+        .extremeExplorer
     ]
 }
 
