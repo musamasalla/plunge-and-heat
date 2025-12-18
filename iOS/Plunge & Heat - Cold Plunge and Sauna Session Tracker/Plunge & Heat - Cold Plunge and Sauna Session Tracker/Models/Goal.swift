@@ -375,8 +375,41 @@ extension Challenge {
         participants: 892
     )
     
+    static let contrastKing = Challenge(
+        name: "Contrast King",
+        description: "Complete 5 contrast sessions (cold + sauna same day)",
+        iconName: "arrow.triangle.swap",
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .day, value: 14, to: Date())!,
+        requirement: ChallengeRequirement(type: .totalSessions, target: 5, sessionType: nil),
+        participants: 643
+    )
+    
+    static let weekendWarrior = Challenge(
+        name: "Weekend Warrior",
+        description: "Complete 4 sessions every weekend for a month",
+        iconName: "calendar.badge.plus",
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .day, value: 28, to: Date())!,
+        requirement: ChallengeRequirement(type: .totalSessions, target: 16, sessionType: nil),
+        participants: 1089
+    )
+    
+    static let mindfulMinutes = Challenge(
+        name: "Mindful Minutes",
+        description: "Accumulate 60 minutes of cold exposure",
+        iconName: "brain.head.profile",
+        startDate: Date(),
+        endDate: Calendar.current.date(byAdding: .day, value: 21, to: Date())!,
+        requirement: ChallengeRequirement(type: .totalMinutes, target: 60, sessionType: .coldPlunge),
+        participants: 756
+    )
+    
     static let allChallenges: [Challenge] = [
         .thirtyDayChallenge,
-        .saunaSprint
+        .saunaSprint,
+        .contrastKing,
+        .weekendWarrior,
+        .mindfulMinutes
     ]
 }
