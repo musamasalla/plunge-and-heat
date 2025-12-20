@@ -443,14 +443,22 @@ final class DataManager: ObservableObject {
     // MARK: - Reset
     
     func resetAllData() {
+        // Clear local cache
         sessions = []
         goals = []
         achievements = Achievement.allAchievements
         joinedChallenges = []
         
+        // Clear Core Data
+        for session in coreData.fetchAllSessions() {
+            coreData.deleteSession(session)
+        }
+        
+        // Clear UserDefaults
         UserDefaults.standard.removeObject(forKey: sessionsKey)
         UserDefaults.standard.removeObject(forKey: goalsKey)
         UserDefaults.standard.removeObject(forKey: achievementsKey)
         UserDefaults.standard.removeObject(forKey: challengesKey)
+        UserDefaults.standard.removeObject(forKey: "coreDataMigrationComplete")
     }
 }

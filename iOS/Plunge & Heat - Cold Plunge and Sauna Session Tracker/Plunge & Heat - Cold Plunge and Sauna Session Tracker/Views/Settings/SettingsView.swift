@@ -195,7 +195,7 @@ struct SettingsView: View {
                 icon: "speaker.wave.2.fill",
                 title: "Sound Effects",
                 color: .green,
-                isOn: .constant(true)
+                isOn: $settings.soundEffectsEnabled
             )
         }
     }
@@ -233,7 +233,7 @@ struct SettingsView: View {
                     icon: "heart.circle.fill",
                     title: "Auto-fetch Heart Rate",
                     color: .red,
-                    isOn: .constant(true)
+                    isOn: $settings.autoFetchHeartRate
                 )
                 
                 Divider().background(AppTheme.surfaceBackground)
@@ -243,7 +243,7 @@ struct SettingsView: View {
                     icon: "brain.head.profile",
                     title: "Save to Mindful Minutes",
                     color: .cyan,
-                    isOn: .constant(true)
+                    isOn: $settings.saveToMindfulMinutes
                 )
             }
         }
@@ -281,7 +281,7 @@ struct SettingsView: View {
                 icon: "flame.fill",
                 title: "Streak Alerts",
                 color: .orange,
-                isOn: .constant(true)
+                isOn: $settings.streakAlertsEnabled
             )
             
             Divider().background(AppTheme.surfaceBackground)
@@ -291,7 +291,7 @@ struct SettingsView: View {
                 icon: "target",
                 title: "Goal Progress",
                 color: .green,
-                isOn: .constant(true)
+                isOn: $settings.goalProgressEnabled
             )
         }
     }
@@ -383,7 +383,11 @@ struct SettingsView: View {
             Divider().background(AppTheme.surfaceBackground)
             
             // Privacy Policy
-            Link(destination: URL(string: "https://plungeheat.app/privacy")!) {
+            Button(action: {
+                if let url = URL(string: "https://plungeheat.app/privacy") {
+                    UIApplication.shared.open(url)
+                }
+            }) {
                 SettingsRow(
                     icon: "hand.raised.fill",
                     title: "Privacy Policy",
@@ -397,7 +401,11 @@ struct SettingsView: View {
             Divider().background(AppTheme.surfaceBackground)
             
             // Terms of Service
-            Link(destination: URL(string: "https://plungeheat.app/terms")!) {
+            Button(action: {
+                if let url = URL(string: "https://plungeheat.app/terms") {
+                    UIApplication.shared.open(url)
+                }
+            }) {
                 SettingsRow(
                     icon: "doc.text.fill",
                     title: "Terms of Service",
@@ -445,15 +453,15 @@ struct SettingsView: View {
     }
     
     private func rateApp() {
-        // Open App Store review
-        if let url = URL(string: "itms-apps://itunes.apple.com/app/id123456789?action=write-review") {
-            UIApplication.shared.open(url)
-        }
+        // TODO: Replace with real App Store ID after publishing
+        // Format: itms-apps://itunes.apple.com/app/idYOUR_APP_ID?action=write-review
+        HapticFeedback.medium()
     }
     
     private func shareApp() {
-        let url = URL(string: "https://apps.apple.com/app/id123456789")!
-        let activityVC = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        // TODO: Replace with real App Store URL after publishing
+        let message = "Check out Plunge & Heat - the ultimate cold plunge and sauna tracking app!"
+        let activityVC = UIActivityViewController(activityItems: [message], applicationActivities: nil)
         
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {

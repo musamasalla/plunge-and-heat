@@ -177,7 +177,11 @@ struct ChallengesView: View {
                 
                 Button(action: {
                     HapticFeedback.medium()
-                    // Join challenge
+                    if featured.isJoined {
+                        // Already joined, just dismiss
+                    } else {
+                        dataManager.joinChallenge(featured)
+                    }
                 }) {
                     Text(featured.isJoined ? "View Progress" : "Join Challenge")
                         .font(.headline)
@@ -228,6 +232,7 @@ struct ChallengeCard: View {
     let challenge: Challenge
     let animate: Bool
     var delay: Double = 0
+    @ObservedObject var dataManager = DataManager.shared
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -279,6 +284,11 @@ struct ChallengeCard: View {
                 
                 Button(action: {
                     HapticFeedback.light()
+                    if challenge.isJoined {
+                        dataManager.leaveChallenge(challenge)
+                    } else {
+                        dataManager.joinChallenge(challenge)
+                    }
                 }) {
                     Text(challenge.isJoined ? "Joined" : "Join")
                         .font(.caption)

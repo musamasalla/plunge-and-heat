@@ -34,6 +34,11 @@ final class SettingsManager: ObservableObject {
         static let currentStreak = "currentStreak"
         static let longestStreak = "longestStreak"
         static let selectedBreathingTechnique = "selectedBreathingTechnique"
+        static let soundEffectsEnabled = "soundEffectsEnabled"
+        static let autoFetchHeartRate = "autoFetchHeartRate"
+        static let saveToMindfulMinutes = "saveToMindfulMinutes"
+        static let streakAlertsEnabled = "streakAlertsEnabled"
+        static let goalProgressEnabled = "goalProgressEnabled"
     }
     
     // MARK: - Published Properties
@@ -84,6 +89,26 @@ final class SettingsManager: ObservableObject {
         didSet { defaults.set(longestStreak, forKey: Keys.longestStreak) }
     }
     
+    @Published var soundEffectsEnabled: Bool {
+        didSet { defaults.set(soundEffectsEnabled, forKey: Keys.soundEffectsEnabled) }
+    }
+    
+    @Published var autoFetchHeartRate: Bool {
+        didSet { defaults.set(autoFetchHeartRate, forKey: Keys.autoFetchHeartRate) }
+    }
+    
+    @Published var saveToMindfulMinutes: Bool {
+        didSet { defaults.set(saveToMindfulMinutes, forKey: Keys.saveToMindfulMinutes) }
+    }
+    
+    @Published var streakAlertsEnabled: Bool {
+        didSet { defaults.set(streakAlertsEnabled, forKey: Keys.streakAlertsEnabled) }
+    }
+    
+    @Published var goalProgressEnabled: Bool {
+        didSet { defaults.set(goalProgressEnabled, forKey: Keys.goalProgressEnabled) }
+    }
+    
     // MARK: - Constants
     
     let freeSessionLimit = 30
@@ -121,6 +146,11 @@ final class SettingsManager: ObservableObject {
         self.totalSessionsLogged = defaults.integer(forKey: Keys.totalSessionsLogged)
         self.currentStreak = defaults.integer(forKey: Keys.currentStreak)
         self.longestStreak = defaults.integer(forKey: Keys.longestStreak)
+        self.soundEffectsEnabled = defaults.object(forKey: Keys.soundEffectsEnabled) as? Bool ?? true
+        self.autoFetchHeartRate = defaults.object(forKey: Keys.autoFetchHeartRate) as? Bool ?? true
+        self.saveToMindfulMinutes = defaults.object(forKey: Keys.saveToMindfulMinutes) as? Bool ?? true
+        self.streakAlertsEnabled = defaults.object(forKey: Keys.streakAlertsEnabled) as? Bool ?? true
+        self.goalProgressEnabled = defaults.object(forKey: Keys.goalProgressEnabled) as? Bool ?? true
     }
     
     // MARK: - Computed Properties
@@ -196,6 +226,11 @@ final class SettingsManager: ObservableObject {
         totalSessionsLogged = 0
         currentStreak = 0
         longestStreak = 0
+        soundEffectsEnabled = true
+        autoFetchHeartRate = true
+        saveToMindfulMinutes = true
+        streakAlertsEnabled = true
+        goalProgressEnabled = true
     }
 }
 
