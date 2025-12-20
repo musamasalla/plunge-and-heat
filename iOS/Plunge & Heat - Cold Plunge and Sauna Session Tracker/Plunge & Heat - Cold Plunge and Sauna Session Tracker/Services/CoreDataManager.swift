@@ -17,22 +17,26 @@ class CoreDataManager {
     
     // MARK: - Persistent Container
     
-    lazy var persistentContainer: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "PlungeHeat")
+    lazy var persistentContainer: NSPersistentContainer = {
+        // Use regular container for now - upgrade to NSPersistentCloudKitContainer
+        // after enabling CloudKit capability in Xcode
+        let container = NSPersistentContainer(name: "PlungeHeat")
         
-        // Configure for CloudKit sync (for premium users)
         guard let description = container.persistentStoreDescriptions.first else {
             fatalError("No store description found")
         }
         
-        // Enable persistent history tracking for CloudKit
+        // Enable persistent history tracking (required for future CloudKit migration)
         description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         
-        // CloudKit container identifier (configure in entitlements)
-        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-            containerIdentifier: "iCloud.com.plungeheat.app"
-        )
+        // NOTE: To enable CloudKit sync:
+        // 1. Add iCloud capability in Xcode (Signing & Capabilities)
+        // 2. Enable CloudKit and create container: iCloud.com.plungeheat.app
+        // 3. Change this to NSPersistentCloudKitContainer
+        // 4. Add: description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+        //         containerIdentifier: "iCloud.com.plungeheat.app"
+        //    )
         
         container.loadPersistentStores { description, error in
             if let error = error {
@@ -40,7 +44,7 @@ class CoreDataManager {
             }
         }
         
-        // Merge policy for CloudKit sync
+        // Merge policy for sync
         container.viewContext.automaticallyMergesChangesFromParent = true
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         
