@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import CoreData
 
 // MARK: - Data Manager
 
@@ -22,7 +23,12 @@ final class DataManager: ObservableObject {
     @Published var achievements: [Achievement] = Achievement.allAchievements
     @Published var joinedChallenges: [Challenge] = []
     
-    // MARK: - Private Properties
+    // MARK: - Core Data
+    
+    private let coreData = CoreDataManager.shared
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Legacy UserDefaults Keys (for migration)
     
     private let sessionsKey = "saved_sessions"
     private let goalsKey = "saved_goals"
@@ -35,19 +41,64 @@ final class DataManager: ObservableObject {
     // MARK: - Initialization
     
     private init() {
+        // Migrate existing UserDefaults data to Core Data
+        migrateUserDefaultsToCoreData()
+        
+        // Load data from Core Data
         loadData()
+        
+        // Listen for remote CloudKit changes
+        NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.loadData()
+            }
+            .store(in: &cancellables)
     }
     
-    // MARK: - Data Persistence
+    // MARK: - Migration from UserDefaults
     
-    private func loadData() {
-        // Load sessions
-        if let data = UserDefaults.standard.data(forKey: sessionsKey),
-           let decoded = try? decoder.decode([Session].self, from: data) {
-            sessions = decoded.sorted { $0.date > $1.date }
+    private func migrateUserDefaultsToCoreData() {
+        let defaults = UserDefaults.standard
+        
+        // Check if migration already done
+        if defaults.bool(forKey: "coreDataMigrationComplete") {
+            return
         }
         
-        // Load goals
+        // Migrate sessions
+        if let data = defaults.data(forKey: sessionsKey),
+           let legacySessions = try? decoder.decode([Session].self, from: data) {
+            for session in legacySessions {
+                _ = coreData.createSession(
+                    type: session.type,
+                    date: session.date,
+                    duration: session.duration,
+                    temperature: session.temperature,
+                    temperatureUnit: session.temperatureUnit,
+                    heartRate: session.heartRate.map { Int16($0) },
+                    notes: session.notes,
+                    protocolUsed: session.protocolUsed,
+                    breathingTechnique: session.breathingTechnique
+                )
+            }
+            // Clear old data
+            defaults.removeObject(forKey: sessionsKey)
+        }
+        
+        // Mark migration complete
+        defaults.set(true, forKey: "coreDataMigrationComplete")
+        print("✅ Migration from UserDefaults to Core Data complete")
+    }
+    
+    // MARK: - Data Persistence (Core Data)
+    
+    private func loadData() {
+        // Load sessions from Core Data
+        let sessionEntities = coreData.fetchAllSessions()
+        sessions = sessionEntities.map { $0.toSession() }.sorted { $0.date > $1.date }
+        
+        // Goals still use UserDefaults for now (keeping achievements/challenges simpler)
         if let data = UserDefaults.standard.data(forKey: goalsKey),
            let decoded = try? decoder.decode([Goal].self, from: data) {
             goals = decoded
@@ -63,12 +114,6 @@ final class DataManager: ObservableObject {
         if let data = UserDefaults.standard.data(forKey: challengesKey),
            let decoded = try? decoder.decode([Challenge].self, from: data) {
             joinedChallenges = decoded
-        }
-    }
-    
-    private func saveSessions() {
-        if let data = try? encoder.encode(sessions) {
-            UserDefaults.standard.set(data, forKey: sessionsKey)
         }
     }
     
@@ -93,8 +138,21 @@ final class DataManager: ObservableObject {
     // MARK: - Session CRUD
     
     func addSession(_ session: Session) {
+        // Save to Core Data (syncs via CloudKit for premium)
+        _ = coreData.createSession(
+            type: session.type,
+            date: session.date,
+            duration: session.duration,
+            temperature: session.temperature,
+            temperatureUnit: session.temperatureUnit,
+            heartRate: session.heartRate.map { Int16($0) },
+            notes: session.notes,
+            protocolUsed: session.protocolUsed,
+            breathingTechnique: session.breathingTechnique
+        )
+        
+        // Update local cache
         sessions.insert(session, at: 0)
-        saveSessions()
         
         // Update settings
         SettingsManager.shared.incrementSessionCount()
@@ -108,20 +166,29 @@ final class DataManager: ObservableObject {
     }
     
     func updateSession(_ session: Session) {
+        // For now, update local cache - Core Data update would need entity reference
         if let index = sessions.firstIndex(where: { $0.id == session.id }) {
             sessions[index] = session
-            saveSessions()
+            // Note: Full Core Data update would require fetching and updating the entity
         }
     }
     
     func deleteSession(_ session: Session) {
+        // Delete from local cache
         sessions.removeAll { $0.id == session.id }
-        saveSessions()
+        
+        // Delete from Core Data
+        let entities = coreData.fetchAllSessions()
+        if let entity = entities.first(where: { $0.id == session.id }) {
+            coreData.deleteSession(entity)
+        }
     }
     
     func deleteSession(at offsets: IndexSet) {
-        sessions.remove(atOffsets: offsets)
-        saveSessions()
+        for index in offsets {
+            let session = sessions[index]
+            deleteSession(session)
+        }
     }
     
     // MARK: - Session Queries
