@@ -621,16 +621,17 @@ struct SafetyTipCard: View {
 // MARK: - Motivational Card
 
 struct MotivationalCard: View {
-    private let quotes = [
+    private static let quotes = [
         ("The cold doesn't build character, it reveals it.", "Unknown"),
         ("Embrace the discomfort. That's where growth happens.", "Wim Hof"),
         ("Your body can withstand almost anything. It's your mind you have to convince.", "Unknown"),
-        ("The obstacle is the way.", "Marcus Aurelius")
+        ("The obstacle is the way.", "Marcus Aurelius"),
+        ("What stands in the way becomes the way.", "Marcus Aurelius"),
+        ("Discipline is the bridge between goals and accomplishment.", "Jim Rohn"),
+        ("The body benefits from movement, and the mind benefits from stillness.", "Sakyong Mipham")
     ]
     
-    private var randomQuote: (String, String) {
-        quotes.randomElement() ?? quotes[0]
-    }
+    @State private var selectedQuote: (String, String) = Self.quotes.randomElement() ?? Self.quotes[0]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -642,13 +643,13 @@ struct MotivationalCard: View {
                 Spacer()
             }
             
-            Text(randomQuote.0)
+            Text(selectedQuote.0)
                 .font(.subheadline)
                 .fontWeight(.medium)
                 .foregroundColor(.white)
                 .lineSpacing(4)
             
-            Text("— \(randomQuote.1)")
+            Text("— \(selectedQuote.1)")
                 .font(.caption)
                 .foregroundColor(AppTheme.textTertiary)
         }

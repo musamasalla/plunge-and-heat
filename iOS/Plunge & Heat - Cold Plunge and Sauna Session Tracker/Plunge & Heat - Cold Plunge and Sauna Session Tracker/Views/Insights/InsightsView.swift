@@ -18,6 +18,8 @@ struct InsightsView: View {
     @State private var animateCards = false
     @State private var showingProtocolLibrary = false
     @State private var showingGoalsView = false
+    @State private var showingChallengesView = false
+    @State private var showingBreathingGuide = false
     @State private var showingPaywall = false
     
     var body: some View {
@@ -56,6 +58,12 @@ struct InsightsView: View {
             }
             .sheet(isPresented: $showingPaywall) {
                 PaywallView()
+            }
+            .sheet(isPresented: $showingChallengesView) {
+                ChallengesView()
+            }
+            .sheet(isPresented: $showingBreathingGuide) {
+                BreathingSessionView()
             }
             .onAppear {
                 withAnimation(.spring().delay(0.2)) {
@@ -149,18 +157,13 @@ struct InsightsView: View {
             }
             
             QuickActionCard(
-                title: "Insights",
-                icon: "brain.head.profile",
-                color: .purple,
-                isPremium: !subscriptionManager.isPremium,
+                title: "Breathe",
+                icon: "wind",
+                color: AppTheme.coldPrimary,
                 animate: animateCards,
                 delay: 0.2
             ) {
-                if subscriptionManager.isPremium {
-                    // Show AI insights
-                } else {
-                    showingPaywall = true
-                }
+                showingBreathingGuide = true
             }
         }
     }
@@ -248,11 +251,21 @@ struct InsightsView: View {
     
     private var challengesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            SectionHeader(title: "Challenges", icon: "flag.fill", color: .blue)
+            HStack {
+                SectionHeader(title: "Challenges", icon: "flag.fill", color: .blue)
+                
+                Spacer()
+                
+                Button(action: { showingChallengesView = true }) {
+                    Text("See All")
+                        .font(.subheadline)
+                        .foregroundColor(AppTheme.coldPrimary)
+                }
+            }
             
             if dataManager.joinedChallenges.isEmpty {
                 JoinChallengeCard {
-                    // Navigate to challenges
+                    showingChallengesView = true
                 }
             } else {
                 ForEach(dataManager.joinedChallenges.prefix(2)) { challenge in
