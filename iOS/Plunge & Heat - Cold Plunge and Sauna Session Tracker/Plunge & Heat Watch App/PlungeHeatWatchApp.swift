@@ -7,21 +7,210 @@
 
 import SwiftUI
 import WatchKit
+import WatchConnectivity
+
+// MARK: - Watch App Entry Point
 
 @main
 struct PlungeHeatWatchApp: App {
+    @StateObject private var sessionManager = WatchSessionManager.shared
+    
     var body: some Scene {
         WindowGroup {
             WatchHomeView()
+                .environmentObject(sessionManager)
         }
+    }
+}
+
+// MARK: - Watch Session Manager
+
+@MainActor
+final class WatchSessionManager: NSObject, ObservableObject {
+    static let shared = WatchSessionManager()
+    
+    @Published var currentStreak: Int = 0
+    @Published var longestStreak: Int = 0
+    @Published var todaySessions: Int = 0
+    @Published var totalSessions: Int = 0
+    @Published var isConnected = false
+    @Published var lastSyncDate: Date?
+    
+    // Local session storage for Watch
+    @Published var localSessions: [WatchSession] = []
+    
+    private var session: WCSession?
+    
+    // App Group for shared data
+    static let appGroupID = "group.com.plungeheat.app"
+    
+    private override init() {
+        super.init()
+        
+        if WCSession.isSupported() {
+            session = WCSession.default
+            session?.delegate = self
+            session?.activate()
+        }
+        
+        loadFromSharedDefaults()
+    }
+    
+    // MARK: - Shared UserDefaults
+    
+    private var sharedDefaults: UserDefaults? {
+        UserDefaults(suiteName: Self.appGroupID)
+    }
+    
+    func loadFromSharedDefaults() {
+        guard let defaults = sharedDefaults else { return }
+        
+        currentStreak = defaults.integer(forKey: "currentStreak")
+        longestStreak = defaults.integer(forKey: "longestStreak")
+        todaySessions = defaults.integer(forKey: "todaySessions")
+        totalSessions = defaults.integer(forKey: "totalSessions")
+        
+        if let lastSync = defaults.object(forKey: "lastUpdate") as? TimeInterval {
+            lastSyncDate = Date(timeIntervalSince1970: lastSync)
+        }
+    }
+    
+    func saveToSharedDefaults() {
+        guard let defaults = sharedDefaults else { return }
+        
+        defaults.set(currentStreak, forKey: "currentStreak")
+        defaults.set(todaySessions, forKey: "todaySessions")
+    }
+    
+    // MARK: - Request Sync from Phone
+    
+    func requestSync() {
+        guard let wcSession = session,
+              wcSession.activationState == .activated,
+              wcSession.isReachable else { return }
+        
+        wcSession.sendMessage(["action": "requestSync"], replyHandler: nil)
+    }
+    
+    // MARK: - Send Session to Phone
+    
+    func sendSessionToPhone(_ session: WatchSession) {
+        guard let wcSession = self.session,
+              wcSession.activationState == .activated else {
+            // Store locally if not connected
+            localSessions.append(session)
+            return
+        }
+        
+        let sessionData: [String: Any] = [
+            "action": "newSession",
+            "id": session.id.uuidString,
+            "type": session.type.rawValue,
+            "date": session.date.timeIntervalSince1970,
+            "duration": session.duration,
+            "heartRate": session.heartRate as Any
+        ]
+        
+        // Use transferUserInfo for reliable delivery even when phone is not reachable
+        wcSession.transferUserInfo(sessionData)
+        
+        // Update local count
+        todaySessions += 1
+        
+        // Play success haptic
+        WKInterfaceDevice.current().play(.success)
+    }
+}
+
+// MARK: - WCSessionDelegate
+
+extension WatchSessionManager: WCSessionDelegate {
+    nonisolated func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        Task { @MainActor in
+            self.isConnected = activationState == .activated
+            if activationState == .activated {
+                self.requestSync()
+            }
+        }
+    }
+    
+    nonisolated func sessionReachabilityDidChange(_ session: WCSession) {
+        Task { @MainActor in
+            self.isConnected = session.isReachable
+            if session.isReachable {
+                // Send any locally stored sessions
+                for localSession in self.localSessions {
+                    self.sendSessionToPhone(localSession)
+                }
+                self.localSessions.removeAll()
+            }
+        }
+    }
+    
+    // Receive application context from iPhone
+    nonisolated func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        Task { @MainActor in
+            if let streak = applicationContext["currentStreak"] as? Int {
+                self.currentStreak = streak
+            }
+            if let longest = applicationContext["longestStreak"] as? Int {
+                self.longestStreak = longest
+            }
+            if let today = applicationContext["todaySessions"] as? Int {
+                self.todaySessions = today
+            }
+            if let total = applicationContext["totalSessions"] as? Int {
+                self.totalSessions = total
+            }
+            if let lastUpdate = applicationContext["lastUpdate"] as? TimeInterval {
+                self.lastSyncDate = Date(timeIntervalSince1970: lastUpdate)
+            }
+            
+            self.saveToSharedDefaults()
+        }
+    }
+}
+
+// MARK: - Watch Session Model
+
+struct WatchSession: Identifiable {
+    let id: UUID
+    let type: WatchSessionType
+    let date: Date
+    let duration: TimeInterval
+    var heartRate: Int?
+    
+    init(type: WatchSessionType, duration: TimeInterval, heartRate: Int? = nil) {
+        self.id = UUID()
+        self.type = type
+        self.date = Date()
+        self.duration = duration
+        self.heartRate = heartRate
+    }
+}
+
+enum WatchSessionType: String {
+    case cold = "cold"
+    case heat = "sauna"
+    
+    var color: Color {
+        self == .cold ? .cyan : .orange
+    }
+    
+    var icon: String {
+        self == .cold ? "snowflake" : "flame.fill"
+    }
+    
+    var name: String {
+        self == .cold ? "Cold Plunge" : "Sauna"
     }
 }
 
 // MARK: - Watch Home View
 
 struct WatchHomeView: View {
-    @State private var currentStreak = 7
-    @State private var todaySessions = 0
+    @EnvironmentObject var sessionManager: WatchSessionManager
+    
     @State private var showingColdTimer = false
     @State private var showingSaunaTimer = false
     
@@ -37,6 +226,9 @@ struct WatchHomeView: View {
                     
                     // Today's summary
                     todaySummary
+                    
+                    // Sync status
+                    syncStatus
                 }
                 .padding()
             }
@@ -45,9 +237,14 @@ struct WatchHomeView: View {
         }
         .sheet(isPresented: $showingColdTimer) {
             WatchTimerView(sessionType: .cold)
+                .environmentObject(sessionManager)
         }
         .sheet(isPresented: $showingSaunaTimer) {
             WatchTimerView(sessionType: .heat)
+                .environmentObject(sessionManager)
+        }
+        .onAppear {
+            sessionManager.requestSync()
         }
     }
     
@@ -59,7 +256,7 @@ struct WatchHomeView: View {
                 .foregroundColor(.orange)
             
             VStack(alignment: .leading, spacing: 0) {
-                Text("\(currentStreak)")
+                Text("\(sessionManager.currentStreak)")
                     .font(.system(.title2, design: .rounded))
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -70,6 +267,19 @@ struct WatchHomeView: View {
             }
             
             Spacer()
+            
+            // Best streak badge
+            if sessionManager.longestStreak > 0 {
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(sessionManager.longestStreak)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.yellow)
+                    Text("best")
+                        .font(.system(size: 8))
+                        .foregroundColor(.gray)
+                }
+            }
         }
         .padding()
         .background(
@@ -128,8 +338,8 @@ struct WatchHomeView: View {
                 .font(.caption)
                 .foregroundColor(.gray)
             
-            if todaySessions > 0 {
-                Text("\(todaySessions) session\(todaySessions == 1 ? "" : "s")")
+            if sessionManager.todaySessions > 0 {
+                Text("\(sessionManager.todaySessions) session\(sessionManager.todaySessions == 1 ? "" : "s")")
                     .font(.headline)
                     .foregroundColor(.white)
             } else {
@@ -145,42 +355,61 @@ struct WatchHomeView: View {
                 .fill(Color.white.opacity(0.1))
         )
     }
+    
+    // MARK: - Sync Status
+    
+    private var syncStatus: some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(sessionManager.isConnected ? Color.green : Color.red)
+                .frame(width: 6, height: 6)
+            
+            Text(sessionManager.isConnected ? "Connected" : "Offline")
+                .font(.caption2)
+                .foregroundColor(.gray)
+            
+            Spacer()
+            
+            if let lastSync = sessionManager.lastSyncDate {
+                Text(lastSync, style: .relative)
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(.horizontal, 4)
+    }
 }
 
 // MARK: - Watch Timer View
 
 struct WatchTimerView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var sessionManager: WatchSessionManager
     
-    enum SessionType {
-        case cold, heat
-        
-        var color: Color {
-            self == .cold ? .cyan : .orange
-        }
-        
-        var icon: String {
-            self == .cold ? "snowflake" : "flame.fill"
-        }
-        
-        var name: String {
-            self == .cold ? "Cold Plunge" : "Sauna"
-        }
-    }
-    
-    let sessionType: SessionType
+    let sessionType: WatchSessionType
     
     @State private var elapsedTime: TimeInterval = 0
     @State private var isRunning = false
     @State private var timer: Timer?
     @State private var currentHeartRate: Int?
+    @State private var showingSaveConfirmation = false
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 16) {
+            // Session type indicator
+            HStack {
+                Image(systemName: sessionType.icon)
+                    .foregroundColor(sessionType.color)
+                Text(sessionType.name)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+            }
+            
             // Timer display
             Text(formatTime(elapsedTime))
-                .font(.system(size: 48, weight: .bold, design: .rounded))
+                .font(.system(size: 44, weight: .bold, design: .rounded))
                 .foregroundColor(sessionType.color)
+                .monospacedDigit()
             
             // Heart rate
             if let hr = currentHeartRate {
@@ -194,13 +423,13 @@ struct WatchTimerView: View {
             }
             
             // Control buttons
-            HStack(spacing: 20) {
-                // Stop/Cancel
-                Button(action: stopSession) {
+            HStack(spacing: 16) {
+                // Cancel
+                Button(action: cancelSession) {
                     Image(systemName: "xmark")
                         .font(.title3)
                         .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
+                        .frame(width: 44, height: 44)
                         .background(Circle().fill(Color.red.opacity(0.8)))
                 }
                 .buttonStyle(.plain)
@@ -210,7 +439,7 @@ struct WatchTimerView: View {
                     Image(systemName: isRunning ? "pause.fill" : "play.fill")
                         .font(.title3)
                         .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
+                        .frame(width: 44, height: 44)
                         .background(Circle().fill(sessionType.color))
                 }
                 .buttonStyle(.plain)
@@ -220,16 +449,23 @@ struct WatchTimerView: View {
                     Image(systemName: "checkmark")
                         .font(.title3)
                         .foregroundColor(.white)
-                        .frame(width: 50, height: 50)
+                        .frame(width: 44, height: 44)
                         .background(Circle().fill(Color.green.opacity(0.8)))
                 }
                 .buttonStyle(.plain)
+                .disabled(elapsedTime < 10) // Minimum 10 seconds
             }
         }
-        .navigationTitle(sessionType.name)
-        .navigationBarTitleDisplayMode(.inline)
+        .padding()
         .onDisappear {
             timer?.invalidate()
+        }
+        .alert("Session Saved!", isPresented: $showingSaveConfirmation) {
+            Button("OK") {
+                dismiss()
+            }
+        } message: {
+            Text("\(formatTime(elapsedTime)) logged successfully")
         }
     }
     
@@ -246,10 +482,11 @@ struct WatchTimerView: View {
         WKInterfaceDevice.current().play(.click)
     }
     
-    private func stopSession() {
+    private func cancelSession() {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        WKInterfaceDevice.current().play(.failure)
         dismiss()
     }
     
@@ -258,11 +495,15 @@ struct WatchTimerView: View {
         timer = nil
         isRunning = false
         
-        // Save session to shared container
-        // This would sync with the iOS app via WatchConnectivity
-        WKInterfaceDevice.current().play(.success)
+        // Create and send session
+        let session = WatchSession(
+            type: sessionType,
+            duration: elapsedTime,
+            heartRate: currentHeartRate
+        )
         
-        dismiss()
+        sessionManager.sendSessionToPhone(session)
+        showingSaveConfirmation = true
     }
     
     private func formatTime(_ time: TimeInterval) -> String {
@@ -276,4 +517,5 @@ struct WatchTimerView: View {
 
 #Preview {
     WatchHomeView()
+        .environmentObject(WatchSessionManager.shared)
 }

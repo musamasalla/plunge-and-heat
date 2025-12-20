@@ -163,6 +163,10 @@ final class DataManager: ObservableObject {
         
         // Update challenges
         updateChallengeProgress(for: session)
+        
+        // Sync to Apple Watch
+        WatchConnectivityManager.shared.sendSessionToWatch(session)
+        WatchConnectivityManager.shared.updateSharedData()
     }
     
     func updateSession(_ session: Session) {

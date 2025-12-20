@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct Plunge___Heat___Cold_Plunge_and_Sauna_Session_TrackerApp: App {
+    // Initialize WatchConnectivity for Apple Watch sync
+    @StateObject private var watchConnectivity = WatchConnectivityManager.shared
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(watchConnectivity)
         }
     }
 }
