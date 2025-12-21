@@ -309,25 +309,27 @@ struct DashboardView: View {
     // MARK: - Toolbar Items
     
     private var streakBadge: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "flame.fill")
-                .foregroundColor(.orange)
-                .font(.system(size: 16, weight: .semibold))
-            
-            Text("\(settings.currentStreak)")
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+        NavigationLink(destination: StreakDetailView()) {
+            HStack(spacing: 6) {
+                Image(systemName: "flame.fill")
+                    .foregroundColor(.orange)
+                    .font(.system(size: 14, weight: .semibold))
+                
+                Text("\(settings.currentStreak)")
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(Color.orange.opacity(0.2))
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+                    )
+            )
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(Color.orange.opacity(0.2))
-                .overlay(
-                    Capsule()
-                        .stroke(Color.orange.opacity(0.5), lineWidth: 1)
-                )
-        )
     }
     
     private var premiumButton: some View {
