@@ -7,10 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E88430892EF76E04002665DA /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E88430882EF76E04002665DA /* WidgetKit.framework */; };
+		E884308B2EF76E04002665DA /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E884308A2EF76E04002665DA /* SwiftUI.framework */; };
+		E88430982EF76E08002665DA /* PlungeHeatWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E88430862EF76E04002665DA /* PlungeHeatWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E89B714D2EF6E18B002E651E /* Plunge & Heat Watch App Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = E89B71432EF6E183002E651E /* Plunge & Heat Watch App Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		E88430962EF76E08002665DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E8B2845C2EF2C0D500577B18 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E88430852EF76E04002665DA;
+			remoteInfo = PlungeHeatWidgetsExtension;
+		};
 		E89B714B2EF6E18B002E651E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = E8B2845C2EF2C0D500577B18 /* Project object */;
@@ -21,6 +31,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		E88430992EF76E08002665DA /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				E88430982EF76E08002665DA /* PlungeHeatWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E89B71512EF6E18B002E651E /* Embed Watch Content */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -35,11 +56,32 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		E88430862EF76E04002665DA /* PlungeHeatWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PlungeHeatWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		E88430882EF76E04002665DA /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		E884308A2EF76E04002665DA /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		E89B71432EF6E183002E651E /* Plunge & Heat Watch App Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Plunge & Heat Watch App Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E8B284642EF2C0D600577B18 /* Plunge & Heat - Cold Plunge and Sauna Session Tracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Plunge & Heat - Cold Plunge and Sauna Session Tracker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E884309C2EF76E08002665DA /* Exceptions for "PlungeHeatWidgets" folder in "PlungeHeatWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E88430852EF76E04002665DA /* PlungeHeatWidgetsExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		E884308C2EF76E04002665DA /* PlungeHeatWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E884309C2EF76E08002665DA /* Exceptions for "PlungeHeatWidgets" folder in "PlungeHeatWidgetsExtension" target */,
+			);
+			path = PlungeHeatWidgets;
+			sourceTree = "<group>";
+		};
 		E89B71442EF6E183002E651E /* Plunge & Heat Watch App Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Plunge & Heat Watch App Watch App";
@@ -53,6 +95,15 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		E88430832EF76E04002665DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E884308B2EF76E04002665DA /* SwiftUI.framework in Frameworks */,
+				E88430892EF76E04002665DA /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E89B71402EF6E183002E651E /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -70,11 +121,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E88430872EF76E04002665DA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E88430882EF76E04002665DA /* WidgetKit.framework */,
+				E884308A2EF76E04002665DA /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		E8B2845B2EF2C0D500577B18 = {
 			isa = PBXGroup;
 			children = (
 				E8B284662EF2C0D600577B18 /* Plunge & Heat - Cold Plunge and Sauna Session Tracker */,
 				E89B71442EF6E183002E651E /* Plunge & Heat Watch App Watch App */,
+				E884308C2EF76E04002665DA /* PlungeHeatWidgets */,
+				E88430872EF76E04002665DA /* Frameworks */,
 				E8B284652EF2C0D600577B18 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -84,6 +146,7 @@
 			children = (
 				E8B284642EF2C0D600577B18 /* Plunge & Heat - Cold Plunge and Sauna Session Tracker.app */,
 				E89B71432EF6E183002E651E /* Plunge & Heat Watch App Watch App.app */,
+				E88430862EF76E04002665DA /* PlungeHeatWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -91,6 +154,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		E88430852EF76E04002665DA /* PlungeHeatWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E884309D2EF76E08002665DA /* Build configuration list for PBXNativeTarget "PlungeHeatWidgetsExtension" */;
+			buildPhases = (
+				E88430822EF76E04002665DA /* Sources */,
+				E88430832EF76E04002665DA /* Frameworks */,
+				E88430842EF76E04002665DA /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				E884308C2EF76E04002665DA /* PlungeHeatWidgets */,
+			);
+			name = PlungeHeatWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = PlungeHeatWidgetsExtension;
+			productReference = E88430862EF76E04002665DA /* PlungeHeatWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		E89B71422EF6E183002E651E /* Plunge & Heat Watch App Watch App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = E89B714E2EF6E18B002E651E /* Build configuration list for PBXNativeTarget "Plunge & Heat Watch App Watch App" */;
@@ -121,11 +206,13 @@
 				E8B284612EF2C0D500577B18 /* Frameworks */,
 				E8B284622EF2C0D500577B18 /* Resources */,
 				E89B71512EF6E18B002E651E /* Embed Watch Content */,
+				E88430992EF76E08002665DA /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				E89B714C2EF6E18B002E651E /* PBXTargetDependency */,
+				E88430972EF76E08002665DA /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				E8B284662EF2C0D600577B18 /* Plunge & Heat - Cold Plunge and Sauna Session Tracker */,
@@ -147,6 +234,9 @@
 				LastSwiftUpdateCheck = 2620;
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
+					E88430852EF76E04002665DA = {
+						CreatedOnToolsVersion = 26.2;
+					};
 					E89B71422EF6E183002E651E = {
 						CreatedOnToolsVersion = 26.2;
 					};
@@ -171,11 +261,19 @@
 			targets = (
 				E8B284632EF2C0D500577B18 /* Plunge & Heat - Cold Plunge and Sauna Session Tracker */,
 				E89B71422EF6E183002E651E /* Plunge & Heat Watch App Watch App */,
+				E88430852EF76E04002665DA /* PlungeHeatWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		E88430842EF76E04002665DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E89B71412EF6E183002E651E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -193,6 +291,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		E88430822EF76E04002665DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E89B713F2EF6E183002E651E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -210,6 +315,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		E88430972EF76E08002665DA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E88430852EF76E04002665DA /* PlungeHeatWidgetsExtension */;
+			targetProxy = E88430962EF76E08002665DA /* PBXContainerItemProxy */;
+		};
 		E89B714C2EF6E18B002E651E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = E89B71422EF6E183002E651E /* Plunge & Heat Watch App Watch App */;
@@ -218,6 +328,66 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		E884309A2EF76E08002665DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9Q4TV94VR7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlungeHeatWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PlungeHeatWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Plunge---Heat.Plunge---Heat---Cold-Plunge-and-Sauna-Session-Tracker.PlungeHeatWidgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E884309B2EF76E08002665DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 9Q4TV94VR7;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlungeHeatWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = PlungeHeatWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "Plunge---Heat.Plunge---Heat---Cold-Plunge-and-Sauna-Session-Tracker.PlungeHeatWidgets";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		E89B714F2EF6E18B002E651E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -472,6 +642,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		E884309D2EF76E08002665DA /* Build configuration list for PBXNativeTarget "PlungeHeatWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E884309A2EF76E08002665DA /* Debug */,
+				E884309B2EF76E08002665DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E89B714E2EF6E18B002E651E /* Build configuration list for PBXNativeTarget "Plunge & Heat Watch App Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
