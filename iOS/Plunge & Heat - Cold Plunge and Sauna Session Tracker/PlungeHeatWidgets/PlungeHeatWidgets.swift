@@ -69,60 +69,61 @@ struct PlungeHeatProvider: AppIntentTimelineProvider {
     }
 }
 
+// MARK: - Theme Colors
+
+private extension Color {
+    static let widgetBackground = Color(red: 0.039, green: 0.086, blue: 0.157) // #0A1628
+    static let coldAccent = Color(red: 0.31, green: 0.76, blue: 0.97) // #4FC3F7
+    static let heatAccent = Color(red: 1.0, green: 0.42, blue: 0.21) // #FF6B35
+}
+
 // MARK: - Small Widget View
 
 struct SmallWidgetView: View {
     let entry: PlungeHeatEntry
     
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color(hex: "0A1628"), Color(hex: "0F1F35")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
-            VStack(alignment: .leading, spacing: 12) {
-                // Header
-                HStack {
-                    Image(systemName: "snowflake")
-                        .foregroundColor(Color(hex: "4FC3F7"))
-                    Image(systemName: "flame.fill")
-                        .foregroundColor(Color(hex: "FF6B35"))
-                    Spacer()
-                }
-                .font(.title3)
-                
-                Spacer()
-                
-                // Streak
-                if entry.configuration.showStreak {
-                    HStack(spacing: 4) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                        Text("\(entry.currentStreak)")
-                            .font(.system(size: 32, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
-                    }
-                    
-                    Text("day streak")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
-                
-                // Today's sessions
-                HStack(spacing: 4) {
-                    Text("\(entry.todaySessions)")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                    Text("today")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            // Header icons
+            HStack(spacing: 6) {
+                Image(systemName: "snowflake")
+                    .foregroundColor(.coldAccent)
+                Image(systemName: "flame.fill")
+                    .foregroundColor(.heatAccent)
             }
-            .padding()
+            .font(.headline)
+            
+            Spacer()
+            
+            // Streak display
+            if entry.configuration.showStreak {
+                HStack(spacing: 6) {
+                    Image(systemName: "flame.fill")
+                        .foregroundColor(.orange)
+                        .font(.title3)
+                    
+                    Text("\(entry.currentStreak)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                }
+                
+                Text("day streak")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+            }
+            
+            // Today count
+            HStack(spacing: 4) {
+                Text("\(entry.todaySessions)")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                Text("today")
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.6))
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding()
     }
 }
 
@@ -132,66 +133,69 @@ struct MediumWidgetView: View {
     let entry: PlungeHeatEntry
     
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color(hex: "0A1628"), Color(hex: "0F1F35")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            
-            HStack(spacing: 16) {
-                // Left side - Stats
-                VStack(alignment: .leading, spacing: 12) {
-                    // Header
-                    HStack {
-                        Image(systemName: "snowflake")
-                            .foregroundColor(Color(hex: "4FC3F7"))
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(Color(hex: "FF6B35"))
-                        
-                        Text("Plunge & Heat")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                    }
+        HStack(spacing: 0) {
+            // Left side - Stats
+            VStack(alignment: .leading, spacing: 8) {
+                // Header
+                HStack(spacing: 6) {
+                    Image(systemName: "snowflake")
+                        .foregroundColor(.coldAccent)
+                    Image(systemName: "flame.fill")
+                        .foregroundColor(.heatAccent)
                     
-                    Spacer()
-                    
-                    // Streak
-                    HStack(spacing: 6) {
-                        Image(systemName: "flame.fill")
-                            .foregroundColor(.orange)
-                        
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text("\(entry.currentStreak)")
-                                .font(.system(size: 28, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
-                            Text("day streak")
-                                .font(.caption2)
-                                .foregroundColor(.gray)
-                        }
-                    }
+                    Text("Plunge & Heat")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
                 }
                 
                 Spacer()
                 
-                // Right side - Quick actions
-                VStack(spacing: 8) {
-                    QuickActionButton(
-                        icon: "snowflake",
-                        label: "Cold",
-                        color: Color(hex: "4FC3F7")
-                    )
+                // Streak
+                HStack(spacing: 8) {
+                    Image(systemName: "flame.fill")
+                        .foregroundColor(.orange)
+                        .font(.title2)
                     
-                    QuickActionButton(
-                        icon: "flame.fill",
-                        label: "Sauna",
-                        color: Color(hex: "FF6B35")
-                    )
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(entry.currentStreak)")
+                            .font(.system(size: 32, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("day streak")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.7))
+                    }
                 }
+                
+                // Today sessions
+                HStack(spacing: 4) {
+                    Text("\(entry.todaySessions)")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                    Text("sessions today")
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                .font(.caption)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
+            
+            // Right side - Quick actions
+            VStack(spacing: 10) {
+                QuickActionButton(
+                    icon: "snowflake",
+                    label: "Cold",
+                    color: .coldAccent
+                )
+                
+                QuickActionButton(
+                    icon: "flame.fill",
+                    label: "Sauna",
+                    color: .heatAccent
+                )
+            }
+            .padding(.trailing, 16)
+            .padding(.vertical, 12)
         }
     }
 }
@@ -216,14 +220,14 @@ struct QuickActionButton: View {
     private var buttonContent: some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(.system(size: 18, weight: .medium))
             Text(label)
-                .font(.caption2)
+                .font(.system(size: 10, weight: .medium))
         }
         .foregroundColor(.white)
-        .frame(width: 60, height: 50)
-        .background(color.opacity(0.3))
-        .cornerRadius(12)
+        .frame(width: 56, height: 48)
+        .background(color.opacity(0.35))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
 
@@ -239,7 +243,9 @@ struct PlungeHeatWidget: Widget {
             provider: PlungeHeatProvider()
         ) { entry in
             PlungeHeatWidgetEntryView(entry: entry)
-                .containerBackground(.clear, for: .widget)
+                .containerBackground(for: .widget) {
+                    Color.widgetBackground
+                }
         }
         .configurationDisplayName("Plunge & Heat")
         .description("Track your cold plunge and sauna streak.")
@@ -260,34 +266,6 @@ struct PlungeHeatWidgetEntryView: View {
         default:
             SmallWidgetView(entry: entry)
         }
-    }
-}
-
-// MARK: - Color Extension
-
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
     }
 }
 
