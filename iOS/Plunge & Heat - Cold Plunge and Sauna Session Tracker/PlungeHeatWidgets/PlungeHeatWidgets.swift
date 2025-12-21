@@ -56,7 +56,7 @@ struct PlungeHeatProvider: AppIntentTimelineProvider {
         )
         
         // Update every hour
-        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date())!
+        let nextUpdate = Calendar.current.date(byAdding: .hour, value: 1, to: Date()) ?? Date().addingTimeInterval(3600)
         return Timeline(entries: [entry], policy: .after(nextUpdate))
     }
     
@@ -204,18 +204,26 @@ struct QuickActionButton: View {
     let color: Color
     
     var body: some View {
-        Link(destination: URL(string: "plungeheat://log/\(label.lowercased())")!) {
-            VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.title3)
-                Text(label)
-                    .font(.caption2)
+        if let url = URL(string: "plungeheat://log/\(label.lowercased())") {
+            Link(destination: url) {
+                buttonContent
             }
-            .foregroundColor(.white)
-            .frame(width: 60, height: 50)
-            .background(color.opacity(0.3))
-            .cornerRadius(12)
+        } else {
+            buttonContent
         }
+    }
+    
+    private var buttonContent: some View {
+        VStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.title3)
+            Text(label)
+                .font(.caption2)
+        }
+        .foregroundColor(.white)
+        .frame(width: 60, height: 50)
+        .background(color.opacity(0.3))
+        .cornerRadius(12)
     }
 }
 
